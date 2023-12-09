@@ -1,29 +1,28 @@
 package com.pokemonreview.api.repository;
 
-import com.pokemonreview.api.models.Pokemon;
+import com.pokemonreview.api.containers.BaeldungPostgresqlContainer;
+import com.pokemonreview.api.containers.MyPostgreSqlTest;
 import com.pokemonreview.api.models.Review;
 import org.assertj.core.api.Assertions;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.List;
 import java.util.Optional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class ReviewRepositoryTests {
-    private ReviewRepository reviewRepository;
+@MyPostgreSqlTest
+class ReviewRepositoryTests {
+
+    @ClassRule
+    public static PostgreSQLContainer<BaeldungPostgresqlContainer> postgreSQLContainer = BaeldungPostgresqlContainer.getInstance();
 
     @Autowired
-    public ReviewRepositoryTests(ReviewRepository reviewRepository) {
-        this.reviewRepository = reviewRepository;
-    }
+    private ReviewRepository reviewRepository;
 
     @Test
-    public void ReviewRepository_SaveAll_ReturnsSavedReview() {
+    void ReviewRepository_SaveAll_ReturnsSavedReview() {
         Review review = Review.builder().title("title").content("content").stars(5).build();
 
         Review savedReview = reviewRepository.save(review);
@@ -33,7 +32,7 @@ public class ReviewRepositoryTests {
     }
 
     @Test
-    public void ReviewRepostory_GetAll_ReturnsMoreThenOneReview() {
+    void ReviewRepostory_GetAll_ReturnsMoreThenOneReview() {
         Review review = Review.builder().title("title").content("content").stars(5).build();
         Review review2 = Review.builder().title("title").content("content").stars(5).build();
 
@@ -47,7 +46,7 @@ public class ReviewRepositoryTests {
     }
 
     @Test
-    public void ReviewRepository_FindById_ReturnsSavedReview() {
+    void ReviewRepository_FindById_ReturnsSavedReview() {
         Review review = Review.builder().title("title").content("content").stars(5).build();
 
         reviewRepository.save(review);
@@ -58,7 +57,7 @@ public class ReviewRepositoryTests {
     }
 
     @Test
-    public void ReviewRepository_UpdateReview_ReturnReview() {
+    void ReviewRepository_UpdateReview_ReturnReview() {
         Review review = Review.builder().title("title").content("content").stars(5).build();
 
         reviewRepository.save(review);
@@ -73,7 +72,7 @@ public class ReviewRepositoryTests {
     }
 
     @Test
-    public void ReviewRepository_ReviewDelete_ReturnReviewIsEmpty() {
+    void ReviewRepository_ReviewDelete_ReturnReviewIsEmpty() {
         Review review = Review.builder().title("title").content("content").stars(5).build();
 
         reviewRepository.save(review);

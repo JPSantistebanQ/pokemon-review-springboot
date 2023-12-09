@@ -1,26 +1,29 @@
 package com.pokemonreview.api.repository;
 
+import com.pokemonreview.api.containers.BaeldungPostgresqlContainer;
+import com.pokemonreview.api.containers.MyPostgreSqlTest;
 import com.pokemonreview.api.models.Pokemon;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.List;
 import java.util.Optional;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class PokemonRepositoryTests {
+@MyPostgreSqlTest
+class PokemonRepositoryTests {
+
+    @ClassRule
+    public static PostgreSQLContainer<BaeldungPostgresqlContainer> postgreSQLContainer = BaeldungPostgresqlContainer.getInstance();
 
     @Autowired
     private PokemonRepository pokemonRepository;
 
     @Test
-    public void PokemonRepository_SaveAll_ReturnSavedPokemon() {
+    void PokemonRepository_SaveAll_ReturnSavedPokemon() {
 
         //Arrange
         Pokemon pokemon = Pokemon.builder()
@@ -36,7 +39,7 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_GetAll_ReturnMoreThenOnePokemon() {
+    void PokemonRepository_GetAll_ReturnMoreThenOnePokemon() {
         Pokemon pokemon = Pokemon.builder()
                 .name("pikachu")
                 .type("electric").build();
@@ -54,7 +57,7 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_FindById_ReturnPokemon() {
+    void PokemonRepository_FindById_ReturnPokemon() {
         Pokemon pokemon = Pokemon.builder()
                 .name("pikachu")
                 .type("electric").build();
@@ -67,7 +70,7 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_FindByType_ReturnPokemonNotNull() {
+    void PokemonRepository_FindByType_ReturnPokemonNotNull() {
         Pokemon pokemon = Pokemon.builder()
                 .name("pikachu")
                 .type("electric").build();
@@ -80,7 +83,7 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_UpdatePokemon_ReturnPokemonNotNull() {
+    void PokemonRepository_UpdatePokemon_ReturnPokemonNotNull() {
         Pokemon pokemon = Pokemon.builder()
                 .name("pikachu")
                 .type("electric").build();
@@ -98,7 +101,7 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_PokemonDelete_ReturnPokemonIsEmpty() {
+    void PokemonRepository_PokemonDelete_ReturnPokemonIsEmpty() {
         Pokemon pokemon = Pokemon.builder()
                 .name("pikachu")
                 .type("electric").build();
@@ -111,5 +114,18 @@ public class PokemonRepositoryTests {
         Assertions.assertThat(pokemonReturn).isEmpty();
     }
 
+    @Test
+    @Sql(scripts = {"/sql/01-test.sql"})
+    void PokemonRepository_UpdatePokemon_ReturnPokemonNotNull_2() {
+
+        Pokemon pokemonSave = pokemonRepository.findByType("electric").get();
+        pokemonSave.setType("Electric");
+        pokemonSave.setName("Raichu");
+
+        Pokemon updatedPokemon = pokemonRepository.save(pokemonSave);
+
+        Assertions.assertThat(updatedPokemon.getName()).isNotNull();
+        Assertions.assertThat(updatedPokemon.getType()).isNotNull();
+    }
 
 }
